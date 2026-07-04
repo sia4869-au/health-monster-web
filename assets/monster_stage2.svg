@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="g2" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#0fa3a3"/>
+      <stop offset="1" stop-color="#ff7a6a"/>
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="12" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- transparent background -->
+  <rect width="100%" height="100%" fill="none"/>
+
+  <!-- ground shadow -->
+  <ellipse cx="512" cy="780" rx="260" ry="60" fill="#000" opacity="0.16" />
+
+  <!-- aura -->
+  <g filter="url(#glow)">
+    <circle cx="512" cy="420" r="260" fill="none" stroke="#ffd36a" stroke-opacity="0.12" stroke-width="40"/>
+  </g>
+
+  <!-- body (standing) -->
+  <g transform="translate(0, -40)">
+    <ellipse cx="512" cy="520" rx="200" ry="240" fill="url(#g2)"/>
+    <!-- shoulder pads -->
+    <path d="M340 420 q-40 -40 40 -60 q60 10 80 40 q-60 20 -160 80" fill="#ffd36a" opacity="0.95"/>
+    <path d="M684 420 q40 -40 -40 -60 q-60 10 -80 40 q60 20 160 80" fill="#ffd36a" opacity="0.95"/>
+    <!-- chest emblem -->
+    <circle cx="512" cy="520" r="36" fill="#fff2d6" stroke="#ffb84d" stroke-width="4"/>
+    <path d="M512 508 L512 532" stroke="#ff7a6a" stroke-width="3" stroke-linecap="round"/>
+    <!-- eyes -->
+    <ellipse cx="470" cy="460" rx="40" ry="52" fill="#071a2a"/>
+    <ellipse cx="554" cy="460" rx="40" ry="52" fill="#071a2a"/>
+    <circle cx="462" cy="448" r="12" fill="#fff"/>
+    <circle cx="546" cy="448" r="12" fill="#fff"/>
+    <!-- mouth confident -->
+    <path d="M470 520 Q512 560 554 520" stroke="#5a1f1f" stroke-width="7" fill="none" stroke-linecap="round"/>
+    <!-- raised paw -->
+    <ellipse cx="620" cy="420" rx="36" ry="28" fill="#0fa3a3"/>
+    <path d="M600 400 q20 -30 40 -20" stroke="#ffdfb3" stroke-width="3" stroke-linecap="round"/>
+    <!-- cape / scarf -->
+    <path d="M420 600 q-40 40 -80 20 q60 10 120 -20 q40 -20 80 -40" fill="#ff7a6a" opacity="0.95"/>
+    <!-- sparkles -->
+    <g fill="#fff7d6" opacity="0.9">
+      <circle cx="480" cy="360" r="6"/>
+      <circle cx="540" cy="340" r="4"/>
+      <circle cx="560" cy="380" r="5"/>
+    </g>
+    <!-- rim light -->
+    <path d="M320 360 q120 -80 384 -40" stroke="#fff7d6" stroke-opacity="0.18" stroke-width="8" fill="none"/>
+  </g>
+</svg>
