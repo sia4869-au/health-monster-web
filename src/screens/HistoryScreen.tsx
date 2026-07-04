@@ -8,6 +8,49 @@ export default function HistoryScreen() {
   const { history } = useGame();
   const navigation = useNavigation<any>();
 
+  const formatType = (type: string) => {
+    switch (type) {
+      case "exercise":
+        return "🏃 運動";
+      case "food":
+        return "🍖 食事";
+      case "steps":
+        return "👣 歩数";
+      case "sleep":
+        return "😴 睡眠";
+      case "quest":
+        return "⚔️ クエスト";
+      default:
+        return type;
+    }
+  };
+
+  const formatPayload = (h: any) => {
+    const p = h.payload;
+
+    switch (h.type) {
+      case "exercise":
+        return `${p.minutes}分運動 (${p.calories}kcal消費)`;
+
+      case "food":
+        return `${p.item} を摂取 (${p.calories}kcal)`;
+
+      case "steps":
+        return `${p.steps.toLocaleString()}歩 歩いた (${p.calories}kcal消費)`;
+
+      case "sleep":
+        return `${p.hours}時間睡眠`;
+
+      case "quest":
+        return p.result === "win"
+        ? "クエストに勝利"
+        : "クエストに敗北";
+
+      default:
+        return JSON.stringify(p);
+    }
+  };
+
   const grouped = history.reduce<Record<string, any[]>>((acc, h) => {
     const d = h.timestamp.slice(0, 10);
     acc[d] = acc[d] || [];
@@ -36,9 +79,17 @@ export default function HistoryScreen() {
               <Text style={styles.date}>{date}</Text>
               {grouped[date].map((h) => (
                 <View key={h.id} style={styles.row}>
-                  <Text style={styles.type}>{h.type}</Text>
-                  <Text style={styles.desc}>{typeof h.payload === "object" ? JSON.stringify(h.payload) : String(h.payload)}</Text>
-                  <Text style={styles.time}>{new Date(h.timestamp).toLocaleTimeString()}</Text>
+                  <Text style={styles.type}>
+                    {formatType(h.type)}
+                  </Text>
+                  <Text style={styles.desc}>
+                    {formatPayload(h)}
+                  </Text>
+                  <Text style={styles.time}>{new Date(h.timestamp).toLocaleTimeString("ja-JP", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    })}
+                  </Text>
                 </View>
               ))}
             </View>
