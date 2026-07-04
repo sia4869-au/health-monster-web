@@ -9,10 +9,31 @@ export default function QuestScreen() {
   const navigation = useNavigation<any>();
   const quests = getAvailableQuests();
 
+   // ←ここに追加
+  const formatReward = (reward: any) => {
+    const rewards = [];
+
+    if (reward.exercisePoints)
+      rewards.push(`🏃 運動ポイント ×${reward.exercisePoints}`);
+
+    if (reward.foodPoints)
+      rewards.push(`🍖 食事ポイント ×${reward.foodPoints}`);
+
+    if (reward.stepsPoints)
+      rewards.push(`👣 移動ポイント ×${reward.stepsPoints}`);
+
+    if (reward.sleepPoints)
+      rewards.push(`😴 睡眠ポイント ×${reward.sleepPoints}`);
+
+    if (reward.stones)
+      rewards.push(`💎 ガチャ石 ×${reward.stones}`);
+
+    return rewards.join(" / ");
+  };
   const onFight = (questId: string, enemyIndex: number) => {
     const res = runQuestBattle(questId, enemyIndex);
     if (res.success) {
-      Alert.alert("勝利", `ドロップ: ${JSON.stringify(res.drops)}`);
+      Alert.alert("勝利", `ドロップ: ${formatReward(res.drops)}`);
     } else {
       Alert.alert("敗北", res.message || "敗北しました");
     }
@@ -32,7 +53,7 @@ export default function QuestScreen() {
         renderItem={({ item }) => (
           <View style={styles.card}>
             <Text style={styles.qTitle}>{item.title} ({item.difficulty})</Text>
-            <Text style={styles.qDesc}>報酬: {JSON.stringify(item.reward)}</Text>
+            <Text style={styles.qDesc}>報酬: {formatReward(item.reward)}</Text>
             <FlatList
               data={item.enemies}
               keyExtractor={(e) => e.id}
