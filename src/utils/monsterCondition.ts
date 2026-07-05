@@ -5,6 +5,7 @@ export type MonsterCondition =
   | "sleepy"
   | "full"
   | "hungry"
+  | "inactive"
   | "normal"
   | "good"
   | "excellent"
@@ -25,6 +26,7 @@ export const getMonsterCondition = (
   const avgSleep = stats.sleepHours / days;
   const avgSteps = stats.steps / days;
   const avgBurned = stats.caloriesBurned / days;
+  const avgConsumed = stats.caloriesConsumed / days;
 
   const avgSurplusCalories =
     (stats.caloriesConsumed - stats.caloriesBurned) / days;
@@ -54,6 +56,19 @@ export const getMonsterCondition = (
     };
   }
 
+  if (avgConsumed <= 1400) {
+    return {
+      condition: "hungry",
+      message: "🍖 お腹減った…",
+    };
+  }
+
+  if (avgBurned <= 1400) {
+    return {
+      condition: "inactive",
+      message: "🏃 もっと動きたい！",
+    };
+  }
   // 良い状態
   if (
     avgSleep >= 8 &&
@@ -115,6 +130,11 @@ export const getEffectiveStats = (
   if (condition === "hungry") {
     hp *= 0.8;
     atk *= 0.9;
+  }
+
+  if (condition === "inactive") {
+    def *= 0.9;
+    speed *= 0.85;
   }
 
   if (condition === "good") {
