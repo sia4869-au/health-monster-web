@@ -2,11 +2,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { v4 as uuidv4 } from "uuid";
-import {
-  getMonsterCondition,
-  getEffectiveStats,
-  MonsterConditionInfo,
-} from "../utils/monsterCondition";
 
 /* 型定義 */
 export type MonsterStats = {
@@ -24,6 +19,7 @@ export type Monster = {
   xp: number;
   createdAt: number;
   stats: MonsterStats;
+  status?: "normal" | "sleepy" | "full" | "hungry";
 };
 
 export type Mission = {
@@ -121,9 +117,6 @@ export type GameState = {
   dailyQuestCount: number;
   dailyQuestLimit: number;
 
-  getCurrentMonsterCondition: () => MonsterConditionInfo;
-  getEffectiveMonsterStats: (monsterId?: string | null) => MonsterStats | null;
-
   addGachaStones: (n: number) => void;
   spendGachaStones: (n: number) => boolean;
   addMonster: (m: Partial<Monster>) => void;
@@ -153,6 +146,11 @@ export type GameState = {
     enemyIndex: number,
     playerMonsterId?: string | null
   ) => QuestBattleResult;
+  
+  getMonsterStatus: (monsterId?: string | null) => {
+    status: "normal" | "sleepy" | "full" | "hungry";
+    message: string | null;
+  };
 };
 
 const STORAGE_KEY = "game_state_v4";
@@ -312,29 +310,50 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
         86400000
     ) + 1
   );
+  
+  const getMonsterStatus = (monsterId?: string | null) => {
+    const days = Math.max(elapsedDays, 1);
+
+    const avgSleep = stats.sleepHours / days;
+
+    const avgSurplusCalories =
+      (stats.caloriesConsumed - stats.caloriesBurned) / days;
+
+    const avgDeficitCalories =
+      (stats.caloriesBurned - stats.caloriesConsumed) / days;
+
+    if (avgSleep < 6) {
+      return {
+        status: "sleepy" as const,
+        message: "😪 眠いよ...",
+      };
+    }
+
+    if (avgSurplusCalories > 7200) {
+      return {
+        status: "full" as const,
+        message: "🤢 お腹いっぱい...",
+      };
+    }
+
+    if (avgDeficitCalories > 1000) {
+      return {
+        status: "hungry" as const,
+        message: "🍖 お腹減った...",
+      };
+    }
+
+    return {
+      status: "normal" as const,
+      message: null,
+    };
+  };
 
   const dailyGoals: DailyGoals = {
     caloriesBurned: 200 + (elapsedDays - 1) * 10,
     caloriesConsumed: 2000,
     steps: 3000 + (elapsedDays - 1) * 300,
     sleepHours: 7,
-  };
-
-  const getCurrentMonsterCondition = (): MonsterConditionInfo => {
-    return getMonsterCondition(stats, elapsedDays, dailyGoals);
-  };
-
-  const getEffectiveMonsterStats = (
-    monsterId?: string | null
-  ): MonsterStats | null => {
-    const targetId = monsterId || selectedMonsterId || monsters[0]?.id || null;
-    if (!targetId) return null;
-
-    const monster = monsters.find((m) => m.id === targetId);
-    if (!monster) return null;
-
-    const conditionInfo = getCurrentMonsterCondition();
-    return getEffectiveStats(monster.stats, conditionInfo.condition);
   };
 
   useEffect(() => {
@@ -378,14 +397,10 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
 
           if (parsed.stats) setStats(parsed.stats);
           if (Array.isArray(parsed.history)) setHistory(parsed.history);
-          if (parsed.selectedMonsterId) {
-            setSelectedMonsterId(parsed.selectedMonsterId);
-          }
+          if (parsed.selectedMonsterId) setSelectedMonsterId(parsed.selectedMonsterId);
 
           setExercisePoints(
-            typeof parsed.exercisePoints === "number"
-              ? parsed.exercisePoints
-              : 20
+            typeof parsed.exercisePoints === "number" ? parsed.exercisePoints : 20
           );
           setFoodPoints(
             typeof parsed.foodPoints === "number" ? parsed.foodPoints : 20
@@ -402,9 +417,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
           setStartDate(parsed.startDate || todayString());
           setDailyQuestDate(parsed.dailyQuestDate || todayString());
           setDailyQuestCount(
-            typeof parsed.dailyQuestCount === "number"
-              ? parsed.dailyQuestCount
-              : 0
+            typeof parsed.dailyQuestCount === "number" ? parsed.dailyQuestCount : 0
           );
 
           applyLoginRewardOnce(parsed);
@@ -923,16 +936,37 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
 
     setDailyQuestCount((s) => s + 1);
 
-    const effectiveStats = getEffectiveMonsterStats(player.id) || player.stats;
-
     let enemyHp = enemy.hp;
-    let playerHp = effectiveStats.hp + player.level * 2;
+    let playerHp = player.stats.hp + player.level * 2;
 
     const playerAtk = Math.max(
       1,
-      effectiveStats.atk + Math.floor(player.level / 5)
+      player.stats.atk + Math.floor(player.level / 5)
     );
-    const playerDef = Math.max(0, effectiveStats.def);
+    const playerDef = Math.max(0, player.stats.def);
+    const status = getMonsterStatus(player.id);
+
+    let playerAtk =
+      player.stats.atk + Math.floor(player.level / 5);
+
+    let playerDef = player.stats.def;
+
+    let playerHp =
+      player.stats.hp + player.level * 2;
+
+if (status.status === "sleepy") {
+  playerHp *= 0.9;
+  playerAtk *= 0.85;
+}
+
+if (status.status === "full") {
+  playerDef *= 0.9;
+}
+
+if (status.status === "hungry") {
+  playerHp *= 0.8;
+  playerAtk *= 0.9;
+}
 
     const enemyAtk = enemy.atk;
     const enemyDef = enemy.def;
@@ -1033,9 +1067,6 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
         dailyQuestCount,
         dailyQuestLimit: DAILY_QUEST_LIMIT,
 
-        getCurrentMonsterCondition,
-        getEffectiveMonsterStats,
-
         addGachaStones,
         spendGachaStones,
         addMonster,
@@ -1051,6 +1082,8 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
 
         getAvailableQuests,
         runQuestBattle,
+
+        getMonsterStatus,
       }}
     >
       {children}

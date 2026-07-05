@@ -1,12 +1,17 @@
 // src/components/Monster.tsx
 import React from "react";
-import { View, Animated, Image, StyleSheet, Text } from "react-native";
+import { View, Animated, StyleSheet, Text } from "react-native";
 import { useGame } from "../context/GameContext";
 import { monsterAssetMap } from "../utils/monsterAssets";
 import { getMonsterEvolutionName } from "../utils/monsterEvolution";
 
 export const Monster: React.FC = () => {
-  const { monsters, selectedMonsterId } = useGame();
+  const {
+    monsters,
+    selectedMonsterId,
+    getCurrentMonsterCondition,
+  } = useGame();
+
   const primary = selectedMonsterId
     ? monsters.find((m) => m.id === selectedMonsterId) || monsters[0]
     : monsters[0];
@@ -15,6 +20,7 @@ export const Monster: React.FC = () => {
 
   React.useEffect(() => {
     if (!primary) return;
+
     Animated.sequence([
       Animated.timing(scale, {
         toValue: 1.08 + primary.level * 0.01,
@@ -32,7 +38,7 @@ export const Monster: React.FC = () => {
   if (!primary) {
     return (
       <View style={styles.container}>
-        <Text style={{ color: "#cbd5e1" }}>
+        <Text style={styles.emptyText}>
           まだモンスターがいません。ガチャで仲間を増やそう！
         </Text>
       </View>
@@ -47,18 +53,27 @@ export const Monster: React.FC = () => {
     return monsterAssetMap.DarkletHome;
   };
 
+  const conditionInfo = getCurrentMonsterCondition();
   const imgSource = getHomeImageForLevel(primary.level);
 
   return (
     <View style={styles.container}>
+      {conditionInfo.message && (
+        <View style={styles.balloon}>
+          <Text style={styles.balloonText}>{conditionInfo.message}</Text>
+        </View>
+      )}
+
       <Animated.Image
-        source={getHomeImageForLevel(primary.level)}
+        source={imgSource}
         style={[styles.image, { transform: [{ scale }] }]}
         resizeMode="contain"
       />
+
       <Text style={styles.name}>
         {getMonsterEvolutionName(primary.level)} Lv{primary.level}
       </Text>
+
       <Text style={styles.sub}>
         HP {primary.stats.hp} • ATK {primary.stats.atk} • DEF {primary.stats.def} • SPD{" "}
         {primary.stats.speed}
@@ -68,14 +83,43 @@ export const Monster: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { alignItems: "center", justifyContent: "center", marginTop: 20 },
+  container: {
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 20,
+  },
+
+  emptyText: {
+    color: "#cbd5e1",
+  },
+
+  balloon: {
+    backgroundColor: "#ffffff",
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    marginBottom: 8,
+  },
+
+  balloonText: {
+    color: "#111827",
+    fontWeight: "700",
+  },
+
   image: {
     width: 220,
     height: 220,
-    shadowColor: "#000",
-    shadowOpacity: 0.3,
-    shadowRadius: 10,
+    backgroundColor: "transparent",
   },
-  name: { color: "#fff", marginTop: 8, fontWeight: "700" },
-  sub: { color: "#9ca3af", marginTop: 4 },
+
+  name: {
+    color: "#fff",
+    marginTop: 8,
+    fontWeight: "700",
+  },
+
+  sub: {
+    color: "#9ca3af",
+    marginTop: 4,
+  },
 });
