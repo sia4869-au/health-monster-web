@@ -3,6 +3,7 @@ import React from "react";
 import { View, Animated, Image, StyleSheet, Text } from "react-native";
 import { useGame } from "../context/GameContext";
 import { monsterAssetMap } from "../utils/monsterAssets";
+import { getMonsterEvolutionName } from "../utils/monsterEvolution";
 
 export const Monster: React.FC = () => {
   const { monsters, selectedMonsterId } = useGame();
@@ -55,7 +56,9 @@ export const Monster: React.FC = () => {
         style={[styles.image, { transform: [{ scale }] }]}
         resizeMode="contain"
       />
-      <Text style={styles.name}>{primary.name} Lv{primary.level}</Text>
+      <Text style={styles.name}>
+        {getMonsterEvolutionName(primary.level)} Lv{primary.level}
+      </Text>
       <Text style={styles.sub}>
         HP {primary.stats.hp} • ATK {primary.stats.atk} • DEF {primary.stats.def} • SPD{" "}
         {primary.stats.speed}
