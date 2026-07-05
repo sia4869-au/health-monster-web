@@ -29,7 +29,7 @@ export default function MonsterDetail() {
     if (monster.level >= 75 && monsterAssetMap["ChaosVald"]) return monsterAssetMap["ChaosVald"];
     if (monster.level >= 50 && monsterAssetMap["NightVelos"]) return monsterAssetMap["NightVelos"];
     if (monster.level >= 25 && monsterAssetMap["Shadowl"]) return monsterAssetMap["Shadowl"];
-    return monsterAssetMap.Darklet || require("../../assets/darklet.png");
+    return monsterAssetMap.Darklet || require("../../assets/monster_stage1.png");
   };
 
   return (

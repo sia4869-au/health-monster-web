@@ -6,7 +6,7 @@ export const monsterAssetMap = {
   ChaosValdHome: require("../../assets/chaos_vald_home.png"),
   FinalDarkValdHome: require("../../assets/final_darkvald_home.png"),
 
-  Darklet: require("../../assets/darklet.png"),
+  Darklet: require("../../assets/monster_stage1.png"),
   Shadowl: require("../../assets/shadowl.png"),
   NightVelos: require("../../assets/dark_velos.png"),
   ChaosVald: require("../../assets/chaos_vald.png"),
