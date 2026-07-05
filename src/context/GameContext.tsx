@@ -49,27 +49,21 @@ export type HistoryItem = {
   targetMonsterId?: string | null;
 };
 
-export type QuestEnemy = {
-  id: string;
-  name: string;
-  hp: number;
-  atk: number;
-  def: number;
-  drop: {
-    exercisePoints?: number;
-    foodPoints?: number;
-    stepsPoints?: number;
-    sleepPoints?: number;
-    stones?: number;
-  };
-};
-
 export type QuestReward = {
   exercisePoints?: number;
   foodPoints?: number;
   stepsPoints?: number;
   sleepPoints?: number;
   stones?: number;
+};
+
+export type QuestEnemy = {
+  id: string;
+  name: string;
+  hp: number;
+  atk: number;
+  def: number;
+  drop: QuestReward;
 };
 
 export type Quest = {
@@ -134,7 +128,6 @@ export type GameState = {
   claimMission: (id: string) => void;
   selectMonster: (id: string) => void;
   save: () => Promise<void>;
-
   resetGame: () => Promise<void>;
 
   addPoints: (
@@ -161,12 +154,7 @@ const DAILY_QUEST_LIMIT = 5;
 const todayString = () => new Date().toISOString().slice(0, 10);
 
 function defaultMonsterStats(): MonsterStats {
-  return {
-    hp: 50,
-    atk: 8,
-    def: 6,
-    speed: 5,
-  };
+  return { hp: 50, atk: 8, def: 6, speed: 5 };
 }
 
 function createStarterMonster(): Monster {
@@ -274,9 +262,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [isLoaded, setIsLoaded] = useState(false);
 
-  const [monsters, setMonsters] = useState<Monster[]>([
-    createStarterMonster(),
-  ]);
+  const [monsters, setMonsters] = useState<Monster[]>([createStarterMonster()]);
   const [gachaStones, setGachaStones] = useState<number>(0);
 
   const [loginInfo, setLoginInfo] = useState({
@@ -285,9 +271,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
     totalLogins: 0,
   });
 
-  const [missions, setMissions] = useState<Mission[]>(
-    createDefaultMissions()
-  );
+  const [missions, setMissions] = useState<Mission[]>(createDefaultMissions());
 
   const [stats, setStats] = useState<Stats>({
     xp: 0,
@@ -310,8 +294,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
   const [quests, setQuests] = useState<Quest[]>(DEFAULT_QUESTS);
 
   const [startDate, setStartDate] = useState<string>(todayString());
-  const [dailyQuestDate, setDailyQuestDate] =
-    useState<string>(todayString());
+  const [dailyQuestDate, setDailyQuestDate] = useState<string>(todayString());
   const [dailyQuestCount, setDailyQuestCount] = useState<number>(0);
 
   const elapsedDays = Math.max(
@@ -329,56 +312,17 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
     sleepHours: 7,
   };
 
-  const resetGame = async () => {
-    await AsyncStorage.removeItem(STORAGE_KEY);
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const raw = await AsyncStorage.getItem(STORAGE_KEY);
 
-    setMonsters([createStarterMonster()]);
-    setGachaStones(0);
+        if (raw) {
+          const parsed = JSON.parse(raw);
 
-    setLoginInfo({
-      lastLoginDate: "",
-      consecutiveDays: 0,
-      totalLogins: 0,
-    });
-
-    setMissions(createDefaultMissions());
-
-      setStats({
-        xp: 0,
-        level: 1,
-        caloriesConsumed: 0,
-        caloriesBurned: 0,
-        sleepHours: 0,
-        steps: 0,
-      });
-
-      setHistory([]);
-
-      setSelectedMonsterId("starter-1");
-
-      setExercisePoints(20);
-      setFoodPoints(20);
-      setStepsPoints(20);
-      setSleepPoints(20);
-
-      setQuests(DEFAULT_QUESTS);
-
-      setStartDate(todayString());
-
-      setDailyQuestDate(todayString());
-      setDailyQuestCount(0);
-    };
-
-    useEffect(() => {
-      const load = async () => {
-        try {
-          const raw = await AsyncStorage.getItem(STORAGE_KEY);
-
-          if (raw) {
-            const parsed = JSON.parse(raw);
-
-            if (Array.isArray(parsed.monsters)) {
-              const migrated = parsed.monsters.map((m: any) => ({
+          if (Array.isArray(parsed.monsters)) {
+            setMonsters(
+              parsed.monsters.map((m: any) => ({
                 id: m.id || uuidv4(),
                 name: m.name || "Darklet",
                 rarity: m.rarity || "common",
@@ -386,44 +330,33 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
                 xp: m.xp || 0,
                 createdAt: m.createdAt || Date.now(),
                 stats: m.stats || defaultMonsterStats(),
-              }));
-
-              setMonsters(migrated);
-            }
-
-            if (typeof parsed.gachaStones === "number") {
-              setGachaStones(parsed.gachaStones);
-            }
-
-            if (parsed.loginInfo) {
-              setLoginInfo(parsed.loginInfo);
-            }
-
-            if (Array.isArray(parsed.missions)) {
-              setMissions(
-                parsed.missions.map((m: any) => ({
-                  ...m,
-                  lastUpdated: m.lastUpdated || null,
-                }))
-              );
-            }
-
-          if (parsed.stats) {
-            setStats(parsed.stats);
+              }))
+            );
           }
 
-          if (Array.isArray(parsed.history)) {
-            setHistory(parsed.history);
+          if (typeof parsed.gachaStones === "number") {
+            setGachaStones(parsed.gachaStones);
           }
 
-          if (parsed.selectedMonsterId) {
-            setSelectedMonsterId(parsed.selectedMonsterId);
+          if (parsed.loginInfo) {
+            setLoginInfo(parsed.loginInfo);
           }
+
+          if (Array.isArray(parsed.missions)) {
+            setMissions(
+              parsed.missions.map((m: any) => ({
+                ...m,
+                lastUpdated: m.lastUpdated || null,
+              }))
+            );
+          }
+
+          if (parsed.stats) setStats(parsed.stats);
+          if (Array.isArray(parsed.history)) setHistory(parsed.history);
+          if (parsed.selectedMonsterId) setSelectedMonsterId(parsed.selectedMonsterId);
 
           setExercisePoints(
-            typeof parsed.exercisePoints === "number"
-              ? parsed.exercisePoints
-              : 20
+            typeof parsed.exercisePoints === "number" ? parsed.exercisePoints : 20
           );
           setFoodPoints(
             typeof parsed.foodPoints === "number" ? parsed.foodPoints : 20
@@ -435,16 +368,12 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
             typeof parsed.sleepPoints === "number" ? parsed.sleepPoints : 20
           );
 
-          if (Array.isArray(parsed.quests)) {
-            setQuests(parsed.quests);
-          }
+          if (Array.isArray(parsed.quests)) setQuests(parsed.quests);
 
           setStartDate(parsed.startDate || todayString());
           setDailyQuestDate(parsed.dailyQuestDate || todayString());
           setDailyQuestCount(
-            typeof parsed.dailyQuestCount === "number"
-              ? parsed.dailyQuestCount
-              : 0
+            typeof parsed.dailyQuestCount === "number" ? parsed.dailyQuestCount : 0
           );
 
           applyLoginRewardOnce(parsed);
@@ -512,9 +441,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
       totalLogins: 0,
     };
 
-    if (loadedLoginInfo.lastLoginDate === today) {
-      return;
-    }
+    if (loadedLoginInfo.lastLoginDate === today) return;
 
     let consecutive = 1;
 
@@ -544,11 +471,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
       prev.map((m) => {
         if (m.type === "weekly") {
           const progress = (m.progress || 0) + 1;
-          return {
-            ...m,
-            progress,
-            completed: progress >= m.target,
-          };
+          return { ...m, progress, completed: progress >= m.target };
         }
 
         return m;
@@ -699,11 +622,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
       const newXp = s.xp + xp;
       const newLevel = Math.floor(newXp / 100) + 1;
 
-      return {
-        ...s,
-        xp: newXp,
-        level: newLevel,
-      };
+      return { ...s, xp: newXp, level: newLevel };
     });
 
     const targetId =
@@ -823,12 +742,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
         prev.map((m) => {
           if (m.id === "daily_steps") {
             const progress = (m.progress || 0) + steps;
-
-            return {
-              ...m,
-              progress,
-              completed: progress >= m.target,
-            };
+            return { ...m, progress, completed: progress >= m.target };
           }
 
           return m;
@@ -889,6 +803,46 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
     );
   };
 
+  const resetGame = async () => {
+    await AsyncStorage.removeItem(STORAGE_KEY);
+
+    const starter = createStarterMonster();
+
+    setMonsters([starter]);
+    setGachaStones(0);
+
+    setLoginInfo({
+      lastLoginDate: "",
+      consecutiveDays: 0,
+      totalLogins: 0,
+    });
+
+    setMissions(createDefaultMissions());
+
+    setStats({
+      xp: 0,
+      level: 1,
+      caloriesConsumed: 0,
+      caloriesBurned: 0,
+      sleepHours: 0,
+      steps: 0,
+    });
+
+    setHistory([]);
+    setSelectedMonsterId(starter.id);
+
+    setExercisePoints(20);
+    setFoodPoints(20);
+    setStepsPoints(20);
+    setSleepPoints(20);
+
+    setQuests(DEFAULT_QUESTS);
+
+    setStartDate(todayString());
+    setDailyQuestDate(todayString());
+    setDailyQuestCount(0);
+  };
+
   const getAvailableQuests = () => quests;
 
   const runQuestBattle = (
@@ -915,37 +869,25 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
 
     const quest = quests.find((q) => q.id === questId);
     if (!quest) {
-      return {
-        success: false,
-        message: "クエストが見つかりません",
-      };
+      return { success: false, message: "クエストが見つかりません" };
     }
 
     const enemy = quest.enemies[enemyIndex];
     if (!enemy) {
-      return {
-        success: false,
-        message: "敵が見つかりません",
-      };
+      return { success: false, message: "敵が見つかりません" };
     }
 
     const playerId =
       playerMonsterId || selectedMonsterId || monsters[0]?.id || null;
 
     if (!playerId) {
-      return {
-        success: false,
-        message: "使用するモンスターがいません",
-      };
+      return { success: false, message: "使用するモンスターがいません" };
     }
 
     const player = monsters.find((m) => m.id === playerId);
 
     if (!player) {
-      return {
-        success: false,
-        message: "モンスターが見つかりません",
-      };
+      return { success: false, message: "モンスターが見つかりません" };
     }
 
     setDailyQuestCount((s) => s + 1);
@@ -965,14 +907,11 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
     let turn = 0;
 
     while (enemyHp > 0 && playerHp > 0 && turn < 100) {
-      const dmgToEnemy = Math.max(1, playerAtk - enemyDef);
-      enemyHp -= dmgToEnemy;
+      enemyHp -= Math.max(1, playerAtk - enemyDef);
 
       if (enemyHp <= 0) break;
 
-      const dmgToPlayer = Math.max(1, enemyAtk - playerDef);
-      playerHp -= dmgToPlayer;
-
+      playerHp -= Math.max(1, enemyAtk - playerDef);
       turn++;
     }
 
@@ -980,42 +919,24 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
       const drops = enemy.drop || {};
       const questReward = quest.reward || {};
 
-      if (drops.exercisePoints) {
-        addPoints("exercise", drops.exercisePoints);
-      }
-
-      if (drops.foodPoints) {
-        addPoints("food", drops.foodPoints);
-      }
-
-      if (drops.stepsPoints) {
-        addPoints("steps", drops.stepsPoints);
-      }
-
-      if (drops.sleepPoints) {
-        addPoints("sleep", drops.sleepPoints);
-      }
-
-      if (drops.stones) {
-        addGachaStones(drops.stones);
-      }
+      if (drops.exercisePoints) addPoints("exercise", drops.exercisePoints);
+      if (drops.foodPoints) addPoints("food", drops.foodPoints);
+      if (drops.stepsPoints) addPoints("steps", drops.stepsPoints);
+      if (drops.sleepPoints) addPoints("sleep", drops.sleepPoints);
+      if (drops.stones) addGachaStones(drops.stones);
 
       if (questReward.exercisePoints) {
         addPoints("exercise", questReward.exercisePoints);
       }
-
       if (questReward.foodPoints) {
         addPoints("food", questReward.foodPoints);
       }
-
       if (questReward.stepsPoints) {
         addPoints("steps", questReward.stepsPoints);
       }
-
       if (questReward.sleepPoints) {
         addPoints("sleep", questReward.sleepPoints);
       }
-
       if (questReward.stones) {
         addGachaStones(questReward.stones);
       }
@@ -1064,16 +985,21 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
         stats,
         history,
         selectedMonsterId,
+
         exercisePoints,
         foodPoints,
         stepsPoints,
         sleepPoints,
+
         quests,
+
         startDate,
         elapsedDays,
         dailyGoals,
+
         dailyQuestCount,
         dailyQuestLimit: DAILY_QUEST_LIMIT,
+
         addGachaStones,
         spendGachaStones,
         addMonster,
@@ -1082,11 +1008,13 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
         claimMission,
         selectMonster,
         save,
+        resetGame,
+
         addPoints,
         consumePoints,
+
         getAvailableQuests,
         runQuestBattle,
-        resetGame,
       }}
     >
       {children}
