@@ -26,11 +26,11 @@ export const Monster: React.FC = () => {
   }
 
   const getImageForLevel = (level: number) => {
-    if (level >= 100 && monsterAssetMap["FinalDarkVald"]) return monsterAssetMap["FinalDarkVald"];
-    if (level >= 75 && monsterAssetMap["ChaosVald"]) return monsterAssetMap["ChaosVald"];
-    if (level >= 50 && monsterAssetMap["NightVelos"]) return monsterAssetMap["NightVelos"];
-    if (level >= 25 && monsterAssetMap["Shadowl"]) return monsterAssetMap["Shadowl"];
-    return monsterAssetMap["Darklet"] || monsterAssetMap[primary.name] || require("../../assets/monster_stage1.png");
+    if (level >= 100 && monsterAssetMap["FinalDarkValdHome"]) return monsterAssetMap["FinalDarkValdHome"];
+    if (level >= 75 && monsterAssetMap["ChaosValdHome"]) return monsterAssetMap["ChaosValdHome"];
+    if (level >= 50 && monsterAssetMap["NightVelosHome"]) return monsterAssetMap["NightVelosHome"];
+    if (level >= 25 && monsterAssetMap["ShadowlHome"]) return monsterAssetMap["ShadowlHome"];
+    return monsterAssetMap["DarkletHome"] || monsterAssetMap[primary.name] || require("../../assets/monster_stage1.png");
   };
 
   const imgSource = getImageForLevel(primary.level);

@@ -15,7 +15,7 @@ export default function MonstersScreen() {
     if (item.level >= 50 && monsterAssetMap["NightVelos"]) return monsterAssetMap["NightVelos"];
     if (item.level >= 25 && monsterAssetMap["Shadowl"]) return monsterAssetMap["Shadowl"];
     if (monsterAssetMap[item.name]) return monsterAssetMap[item.name];
-    try { return require("../../assets/monster_stage1.png"); } catch { return undefined; }
+    try { return require("../../assets/darklet.png"); } catch { return undefined; }
   };
 
   return (
