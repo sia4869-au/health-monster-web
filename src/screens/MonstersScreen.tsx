@@ -16,25 +16,14 @@ export default function MonstersScreen() {
   const { monsters, selectMonster, selectedMonsterId } = useGame();
   const navigation = useNavigation<any>();
 
-  const getMonsterImage = (monster: MonsterType) => {
-    if (monster.level >= 100) {
-      return monsterAssetMap.FinalDarkVald;
-    }
+ const primaryImageForItem = (item: MonsterType) => {
+  if (item.level >= 100) return monsterAssetMap.FinalDarkVald;
+  if (item.level >= 75) return monsterAssetMap.ChaosVald;
+  if (item.level >= 50) return monsterAssetMap.NightVelos;
+  if (item.level >= 25) return monsterAssetMap.Shadowl;
 
-    if (monster.level >= 75) {
-      return monsterAssetMap.ChaosVald;
-    }
-
-    if (monster.level >= 50) {
-      return monsterAssetMap.NightVelos;
-    }
-
-    if (monster.level >= 25) {
-      return monsterAssetMap.Shadowl;
-    }
-
-    return monsterAssetMap.Darklet;
-  };
+  return monsterAssetMap.Darklet;
+};
 
   return (
     <View style={styles.root}>
@@ -57,7 +46,7 @@ export default function MonstersScreen() {
         renderItem={({ item }) => (
           <View style={styles.card}>
             <Image
-              source={getMonsterImage(item)}
+              source={primaryImageForItem(item)}
               style={styles.thumb}
               resizeMode="contain"
             />

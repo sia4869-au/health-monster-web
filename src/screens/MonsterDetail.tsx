@@ -24,13 +24,21 @@ export default function MonsterDetail() {
     );
   }
 
-  const getImage = () => {
-    if (monster.level >= 100 && monsterAssetMap["FinalDarkVald"]) return monsterAssetMap["FinalDarkVald"];
-    if (monster.level >= 75 && monsterAssetMap["ChaosVald"]) return monsterAssetMap["ChaosVald"];
-    if (monster.level >= 50 && monsterAssetMap["NightVelos"]) return monsterAssetMap["NightVelos"];
-    if (monster.level >= 25 && monsterAssetMap["Shadowl"]) return monsterAssetMap["Shadowl"];
-    return monsterAssetMap.Darklet || require("../../assets/darklet.png");
-  };
+ const getImage = () => {
+  if (monster.level >= 100)
+    return monsterAssetMap.FinalDarkVald;
+
+  if (monster.level >= 75)
+    return monsterAssetMap.ChaosVald;
+
+  if (monster.level >= 50)
+    return monsterAssetMap.NightVelos;
+
+  if (monster.level >= 25)
+    return monsterAssetMap.Shadowl;
+
+  return monsterAssetMap.Darklet;
+};
 
   return (
     <View style={styles.root}>
