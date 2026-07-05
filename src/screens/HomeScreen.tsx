@@ -5,7 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   ImageBackground,
-  Alert,
+  Modal,
 } from "react-native";
 import { Monster } from "../components/Monster";
 import { useGame } from "../context/GameContext";
@@ -19,32 +19,12 @@ const HomeScreen: React.FC = () => {
   const { monsters, gachaStones, elapsedDays, resetGame } = useGame();
   const navigation = useNavigation<any>();
   const [modalType, setModalType] = React.useState<string | null>(null);
+  const [showResetConfirm, setShowResetConfirm] = React.useState(false);
 
   const totalXP = monsters.reduce((s, m) => s + (m.xp || 0), 0);
   const totalLevel = monsters.reduce((s, m) => s + (m.level || 0), 0);
   const onResetPress = () => {
-    Alert.alert(
-      "データを初期化しますか？",
-      "所持モンスター、石、履歴、ポイント、クエスト回数などすべて削除されます。\n\nこの操作は元に戻せません。",
-      [
-        {
-          text: "キャンセル",
-          style: "cancel",
-        },
-        {
-          text: "リセットする",
-          style: "destructive",
-          onPress: async () => {
-            await resetGame();
-
-            Alert.alert(
-              "初期化完了",
-              "ゲームデータを初期状態に戻しました。"
-            );
-          },
-        },
-      ]
-    );
+    setShowResetConfirm(true);
   };
 
 
@@ -142,14 +122,38 @@ const HomeScreen: React.FC = () => {
         </View>
 
         <ActionModal type={modalType} onClose={() => setModalType(null)} />
+        <Modal visible={showResetConfirm} transparent animationType="fade">
+  <View style={styles.modalOverlay}>
+    <View style={styles.confirmCard}>
+      <Text style={styles.confirmTitle}>データを初期化しますか？</Text>
+
+      <Text style={styles.confirmText}>
+        所持モンスター、石、履歴、ポイント、クエスト回数などすべて削除されます。
+        {"\n\n"}
+        この操作は元に戻せません。
+      </Text>
+
+      <View style={styles.confirmRow}>
         <TouchableOpacity
-          style={styles.resetButton}
-          onPress={onResetPress}
+          style={[styles.confirmBtn, styles.cancelBtn]}
+          onPress={() => setShowResetConfirm(false)}
         >
-          <Text style={styles.resetText}>
-          🔄 データリセット
-          </Text>
+          <Text style={styles.confirmBtnText}>キャンセル</Text>
         </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.confirmBtn, styles.resetConfirmBtn]}
+          onPress={async () => {
+            await resetGame();
+            setShowResetConfirm(false);
+          }}
+        >
+          <Text style={styles.confirmBtnText}>リセットする</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  </View>
+</Modal>
       </View>
     </ImageBackground>
   );
@@ -254,16 +258,56 @@ const styles = StyleSheet.create({
   btnQuest: {
     backgroundColor: "#ef4444",
   },
-  resetButton: {
-    marginTop: 20,
-    backgroundColor: "#991b1b",
-    paddingVertical: 12,
-    borderRadius: 12,
-    alignItems: "center",
-  },
+  modalOverlay: {
+  flex: 1,
+  backgroundColor: "rgba(0,0,0,0.65)",
+  justifyContent: "center",
+  alignItems: "center",
+},
 
-  resetText: {
-    color: "#fff",
-    fontWeight: "700",
-  },
+confirmCard: {
+  width: "88%",
+  backgroundColor: "#0b1220",
+  borderRadius: 14,
+  padding: 18,
+},
+
+confirmTitle: {
+  color: "#fff",
+  fontSize: 18,
+  fontWeight: "700",
+  marginBottom: 10,
+},
+
+confirmText: {
+  color: "#cbd5e1",
+  lineHeight: 22,
+},
+
+confirmRow: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  marginTop: 18,
+},
+
+confirmBtn: {
+  flex: 1,
+  paddingVertical: 12,
+  borderRadius: 10,
+  alignItems: "center",
+  marginHorizontal: 6,
+},
+
+cancelBtn: {
+  backgroundColor: "#374151",
+},
+
+resetConfirmBtn: {
+  backgroundColor: "#dc2626",
+},
+
+confirmBtnText: {
+  color: "#fff",
+  fontWeight: "700",
+},
 });
