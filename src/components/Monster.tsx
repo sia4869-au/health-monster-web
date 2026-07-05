@@ -51,7 +51,7 @@ export const Monster: React.FC = () => {
   return (
     <View style={styles.container}>
       <Animated.Image
-        source={imgSource}
+        source={getHomeImageForLevel(primary.level)}
         style={[styles.image, { transform: [{ scale }] }]}
         resizeMode="contain"
       />
