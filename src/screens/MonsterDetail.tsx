@@ -4,6 +4,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
 import { useGame } from "../context/GameContext";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { monsterAssetMap } from "../utils/monsterAssets";
+import { getMonsterEvolutionName } from "../utils/monsterEvolution";
 
 type RouteParams = { id?: string };
 
@@ -44,7 +45,9 @@ export default function MonsterDetail() {
     <View style={styles.root}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}><Text style={styles.back}>← 戻る</Text></TouchableOpacity>
-        <Text style={styles.title}>{monster.name}</Text>
+        <Text style={styles.title}>
+          {getMonsterEvolutionName(monster.level)}
+        </Text>
         <View style={{ width: 60 }} />
       </View>
 

@@ -11,6 +11,7 @@ import {
 import { useGame, Monster as MonsterType } from "../context/GameContext";
 import { useNavigation } from "@react-navigation/native";
 import { monsterAssetMap } from "../utils/monsterAssets";
+import { getMonsterEvolutionName } from "../utils/monsterEvolution";
 
 export default function MonstersScreen() {
   const { monsters, selectMonster, selectedMonsterId } = useGame();
@@ -52,7 +53,9 @@ export default function MonstersScreen() {
             />
 
             <View style={styles.infoArea}>
-              <Text style={styles.name}>{item.name}</Text>
+              <Text style={styles.name}>
+                {getMonsterEvolutionName(item.level)}
+              </Text>
 
               <Text style={styles.sub}>
                 {item.rarity} ・ Lv {item.level} ・ XP {item.xp}
