@@ -135,6 +135,8 @@ export type GameState = {
   selectMonster: (id: string) => void;
   save: () => Promise<void>;
 
+  resetGame: () => Promise<void>;
+
   addPoints: (
     kind: "exercise" | "food" | "steps" | "sleep",
     amount: number
@@ -327,44 +329,84 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
     sleepHours: 7,
   };
 
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const raw = await AsyncStorage.getItem(STORAGE_KEY);
+  const resetGame = async () => {
+    await AsyncStorage.removeItem(STORAGE_KEY);
 
-        if (raw) {
-          const parsed = JSON.parse(raw);
+    setMonsters([createStarterMonster()]);
+    setGachaStones(0);
 
-          if (Array.isArray(parsed.monsters)) {
-            const migrated = parsed.monsters.map((m: any) => ({
-              id: m.id || uuidv4(),
-              name: m.name || "Darklet",
-              rarity: m.rarity || "common",
-              level: Math.min(m.level || 1, MAX_MONSTER_LEVEL),
-              xp: m.xp || 0,
-              createdAt: m.createdAt || Date.now(),
-              stats: m.stats || defaultMonsterStats(),
-            }));
+    setLoginInfo({
+      lastLoginDate: "",
+      consecutiveDays: 0,
+      totalLogins: 0,
+    });
 
-            setMonsters(migrated);
-          }
+    setMissions(createDefaultMissions());
 
-          if (typeof parsed.gachaStones === "number") {
-            setGachaStones(parsed.gachaStones);
-          }
+      setStats({
+        xp: 0,
+        level: 1,
+        caloriesConsumed: 0,
+        caloriesBurned: 0,
+        sleepHours: 0,
+        steps: 0,
+      });
 
-          if (parsed.loginInfo) {
-            setLoginInfo(parsed.loginInfo);
-          }
+      setHistory([]);
 
-          if (Array.isArray(parsed.missions)) {
-            setMissions(
-              parsed.missions.map((m: any) => ({
-                ...m,
-                lastUpdated: m.lastUpdated || null,
-              }))
-            );
-          }
+      setSelectedMonsterId("starter-1");
+
+      setExercisePoints(20);
+      setFoodPoints(20);
+      setStepsPoints(20);
+      setSleepPoints(20);
+
+      setQuests(DEFAULT_QUESTS);
+
+      setStartDate(todayString());
+
+      setDailyQuestDate(todayString());
+      setDailyQuestCount(0);
+    };
+
+    useEffect(() => {
+      const load = async () => {
+        try {
+          const raw = await AsyncStorage.getItem(STORAGE_KEY);
+
+          if (raw) {
+            const parsed = JSON.parse(raw);
+
+            if (Array.isArray(parsed.monsters)) {
+              const migrated = parsed.monsters.map((m: any) => ({
+                id: m.id || uuidv4(),
+                name: m.name || "Darklet",
+                rarity: m.rarity || "common",
+                level: Math.min(m.level || 1, MAX_MONSTER_LEVEL),
+                xp: m.xp || 0,
+                createdAt: m.createdAt || Date.now(),
+                stats: m.stats || defaultMonsterStats(),
+              }));
+
+              setMonsters(migrated);
+            }
+
+            if (typeof parsed.gachaStones === "number") {
+              setGachaStones(parsed.gachaStones);
+            }
+
+            if (parsed.loginInfo) {
+              setLoginInfo(parsed.loginInfo);
+            }
+
+            if (Array.isArray(parsed.missions)) {
+              setMissions(
+                parsed.missions.map((m: any) => ({
+                  ...m,
+                  lastUpdated: m.lastUpdated || null,
+                }))
+              );
+            }
 
           if (parsed.stats) {
             setStats(parsed.stats);
@@ -1044,6 +1086,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
         consumePoints,
         getAvailableQuests,
         runQuestBattle,
+        resetGame,
       }}
     >
       {children}

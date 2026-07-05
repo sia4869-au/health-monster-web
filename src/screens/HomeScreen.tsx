@@ -5,6 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   ImageBackground,
+  Alert,
 } from "react-native";
 import { Monster } from "../components/Monster";
 import { useGame } from "../context/GameContext";
@@ -15,12 +16,37 @@ import StatusBar from "../components/StatusBar";
 const bg = require("../../assets/background.png");
 
 const HomeScreen: React.FC = () => {
-  const { monsters, gachaStones, elapsedDays } = useGame();
+  const { monsters, gachaStones, elapsedDays, resetGame } = useGame();
   const navigation = useNavigation<any>();
   const [modalType, setModalType] = React.useState<string | null>(null);
 
   const totalXP = monsters.reduce((s, m) => s + (m.xp || 0), 0);
   const totalLevel = monsters.reduce((s, m) => s + (m.level || 0), 0);
+  const onResetPress = () => {
+    Alert.alert(
+      "データを初期化しますか？",
+      "所持モンスター、石、履歴、ポイント、クエスト回数などすべて削除されます。\n\nこの操作は元に戻せません。",
+      [
+        {
+          text: "キャンセル",
+          style: "cancel",
+        },
+        {
+          text: "リセットする",
+          style: "destructive",
+          onPress: async () => {
+            await resetGame();
+
+            Alert.alert(
+              "初期化完了",
+              "ゲームデータを初期状態に戻しました。"
+            );
+          },
+        },
+      ]
+    );
+  };
+
 
   return (
     <ImageBackground source={bg} style={styles.background} resizeMode="cover">
@@ -116,10 +142,19 @@ const HomeScreen: React.FC = () => {
         </View>
 
         <ActionModal type={modalType} onClose={() => setModalType(null)} />
+        <TouchableOpacity
+          style={styles.resetButton}
+          onPress={onResetPress}
+        >
+          <Text style={styles.resetText}>
+          🔄 データリセット
+          </Text>
+        </TouchableOpacity>
       </View>
     </ImageBackground>
   );
 };
+
 
 export default HomeScreen;
 
@@ -218,5 +253,17 @@ const styles = StyleSheet.create({
   },
   btnQuest: {
     backgroundColor: "#ef4444",
+  },
+  resetButton: {
+    marginTop: 20,
+    backgroundColor: "#991b1b",
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: "center",
+  },
+
+  resetText: {
+    color: "#fff",
+    fontWeight: "700",
   },
 });
