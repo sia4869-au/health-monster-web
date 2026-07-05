@@ -1,3 +1,4 @@
+// src/utils/monsterAssets.ts
 export const monsterAssetMap = {
   DarkletHome: require("../../assets/darklet_home.png"),
   ShadowlHome: require("../../assets/shadowl_home.png"),
