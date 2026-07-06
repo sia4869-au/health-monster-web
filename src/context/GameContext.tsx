@@ -314,7 +314,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
   );
 
   const dailyGoals: DailyGoals = {
-    caloriesBurned: 200 + (elapsedDays - 1) * 10,
+    caloriesBurned: 2000 + (elapsedDays - 1) * 10,
     caloriesConsumed: 2000,
     steps: 3000 + (elapsedDays - 1) * 300,
     sleepHours: 7,
