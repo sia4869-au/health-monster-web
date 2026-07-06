@@ -314,10 +314,10 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
   );
 
   const dailyGoals: DailyGoals = {
-    caloriesBurned: 2000 + (elapsedDays - 1) * 10,
-    caloriesConsumed: 2000,
-    steps: 3000 + (elapsedDays - 1) * 300,
-    sleepHours: 7,
+    caloriesBurned: (elapsedDays) * 2000,
+    caloriesConsumed: (elapsedDays) * 2000,
+    steps: (elapsedDays) * 3000,
+    sleepHours: (elapsedDays) * 7,
   };
 
   const getCurrentMonsterCondition = (): MonsterConditionInfo => {
